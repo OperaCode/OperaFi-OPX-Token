@@ -9,7 +9,6 @@ import { parseEther } from "viem";
 import { OPERAFI_ABI } from "../abi/OperaFi";
 import { CONTRACT_ADDRESS } from "../utils/constants";
 
-
 export interface TokenStats {
   name:            string;
   symbol:          string;
@@ -23,12 +22,10 @@ export interface TokenStats {
 }
 
 export interface UserStats {
-  balance:          bigint;
-  canRequest:       boolean;
-  secondsUntilNext: bigint;
-  lastClaimTime:    bigint;
-  // faucetStatus returns BOTH canClaim + timeRemaining in one call
-  // We use it as a bonus cross-check alongside the individual fields
+  balance:                   bigint;
+  canRequest:                boolean;
+  secondsUntilNext:          bigint;
+  lastClaimTime:             bigint;
   faucetStatusCanClaim:      boolean;
   faucetStatusTimeRemaining: bigint;
 }
@@ -36,28 +33,19 @@ export interface UserStats {
 export function useContract() {
   const { address, isConnected } = useAccount();
 
+  // Safe fallback — zero address used when wallet not yet connected.
+  // This keeps the contracts array always defined so wagmi v3
+  // can register the calls and fire them the moment address arrives.
+  const userAddress = (
+    address ?? '0x0000000000000000000000000000000000000000'
+  ) as `0x${string}`;
+
   const { writeContract, data: txHash, isPending: isWritePending } =
     useWriteContract();
   const { isLoading: isTxConfirming, isSuccess: isTxConfirmed } =
     useWaitForTransactionReceipt({ hash: txHash });
 
-  // ============================================================
-  // TOKEN-LEVEL READS
-  // These don't need a connected wallet — they read public
-  // contract state. We batch them into one multicall.
-  //
-  // Aligned to your ABI — every functionName below exists
-  // in OPERAFI_ABI. Index order matters for parsing below.
-  // index 0 → name
-  // index 1 → symbol
-  // index 2 → totalSupply
-  // index 3 → MAX_SUPPLY
-  // index 4 → remainingSupply
-  // index 5 → FAUCET_AMOUNT
-  // index 6 → INITIAL_SUPPLY
-  // index 7 → NO_MINT_PERIOD
-  // index 8 → owner
-  // ============================================================
+  // ── Token reads (no wallet needed) ───────────────────────
   const { data: tokenData, refetch: refetchToken } = useReadContracts({
     contracts: [
       { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "name"            },
@@ -72,34 +60,20 @@ export function useContract() {
     ],
   });
 
-  // ============================================================
-  // USER-LEVEL READS
-  // These require a connected wallet address as argument.
-  // `query: { enabled: !!address }` means wagmi will SKIP
-  // these calls entirely when no wallet is connected.
-  //
-  // index 0 → balanceOf(address)
-  // index 1 → canRequestTokens(address)
-  // index 2 → getUntilNextRequestTime(address)  ← your ABI name
-  // index 3 → lastClaimTime(address)            ← your ABI name
-  // index 4 → faucetStatus(address)             ← returns {canClaim, timeRemaining}
-  // ============================================================
+  // ── User reads (wallet needed) ────────────────────────────
+  // No conditional array — always defined with userAddress fallback.
+  // No `enabled` flag — let wagmi fire immediately when address is ready.
   const { data: userData, refetch: refetchUser } = useReadContracts({
-    contracts: address ? [
-      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "balanceOf",              args: [address] },
-      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "canRequestTokens",       args: [address] },
-      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "getUntilNextRequestTime",args: [address] },
-      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "lastClaimTime",          args: [address] },
-      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "faucetStatus",           args: [address] },
-    ] : [],
-    query: { enabled: !!address },
+    contracts: [
+      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "balanceOf",               args: [userAddress] },
+      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "canRequestTokens",        args: [userAddress] },
+      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "getUntilNextRequestTime", args: [userAddress] },
+      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "lastClaimTime",           args: [userAddress] },
+      { address: CONTRACT_ADDRESS as `0x${string}`, abi: OPERAFI_ABI, functionName: "faucetStatus",            args: [userAddress] },
+    ],
   });
 
-  // ============================================================
-  // PARSE TOKEN DATA
-  // We map each index to a named field. If the call failed or
-  // hasn't loaded yet, we fall back to a safe default (0n, "—").
-  // ============================================================
+  // ── Parse token data ──────────────────────────────────────
   const tokenStats: TokenStats | null = tokenData ? {
     name:            (tokenData[0].result as string) ?? "—",
     symbol:          (tokenData[1].result as string) ?? "—",
@@ -112,25 +86,25 @@ export function useContract() {
     owner:           (tokenData[8].result as string) ?? "",
   } : null;
 
-  // ============================================================
-  // PARSE USER DATA
-  // faucetStatus returns a tuple {canClaim: bool, timeRemaining: uint256}
-  // wagmi returns tuples as an object with named keys matching
-  // your ABI output names — so we access result.canClaim etc.
-  // ============================================================
+  // ── Parse user data ───────────────────────────────────────
   const faucetStatusResult = userData?.[4]?.result as
     { canClaim: boolean; timeRemaining: bigint } | undefined;
 
+  // secondsUntilNext is the ground truth for canRequest.
+  // If 0 seconds remain → cooldown over → user can claim.
+  // We read index [2] (getUntilNextRequestTime) for this.
+  const secondsRaw = (userData?.[2]?.result as bigint) ?? 1n;
+
   const userStats: UserStats | null = userData && userData.length === 5 ? {
-    balance:                   (userData[0].result as bigint)  ?? 0n,
-    canRequest:                (userData[1].result as boolean) ?? false,
-    secondsUntilNext:          (userData[2].result as bigint)  ?? 0n,
-    lastClaimTime:             (userData[3].result as bigint)  ?? 0n,
+    balance:                   (userData[0].result as bigint) ?? 0n,
+    canRequest:                secondsRaw === 0n,
+    secondsUntilNext:          secondsRaw === 1n ? 0n : secondsRaw,
+    lastClaimTime:             (userData[3].result as bigint) ?? 0n,
     faucetStatusCanClaim:      faucetStatusResult?.canClaim      ?? false,
     faucetStatusTimeRemaining: faucetStatusResult?.timeRemaining ?? 0n,
   } : null;
 
-  // ── Refetch everything after a tx confirms ────────────────
+  // ── Refetch after confirmed transaction ───────────────────
   useEffect(() => {
     if (isTxConfirmed) {
       refetchToken();
@@ -138,18 +112,12 @@ export function useContract() {
     }
   }, [isTxConfirmed]);
 
-  // ============================================================
-  // WRITE FUNCTIONS
-  // These send transactions. writeContract is fire-and-forget —
-  // NOT async. The result comes back via txHash + isTxConfirmed.
-  // ============================================================
-
+  // ── Write functions ───────────────────────────────────────
   const requestToken = useCallback(() => {
     writeContract({
       address: CONTRACT_ADDRESS as `0x${string}`,
       abi: OPERAFI_ABI,
       functionName: "requestToken",
-      // no args — matches your ABI: "inputs": []
     });
   }, [writeContract]);
 
@@ -159,7 +127,6 @@ export function useContract() {
       abi: OPERAFI_ABI,
       functionName: "mint",
       args: [to as `0x${string}`, parseEther(amount)],
-      // matches ABI: mint(address to, uint256 amount)
     });
   }, [writeContract]);
 
@@ -169,26 +136,20 @@ export function useContract() {
       abi: OPERAFI_ABI,
       functionName: "transfer",
       args: [to as `0x${string}`, parseEther(amount)],
-      // matches ABI: transfer(address to, uint256 value)
     });
   }, [writeContract]);
 
   return {
-    // Wallet
     address,
     isConnected,
-    // Contract data
     tokenStats,
     userStats,
-    // Write actions
     requestToken,
     mint,
     transfer,
-    // Tx state
     isLoading: isWritePending || isTxConfirming,
     isTxConfirmed,
     txHash,
-    // Manual refresh
     refetch: () => { refetchToken(); refetchUser(); },
   };
 }

@@ -11,14 +11,7 @@ import { useContract }   from '../hooks/useContract'
 import { formatTokenAmount, shortenAddress } from '../utils/format'
 import { BLOCK_EXPLORER_URL } from '../utils/constants'
 
-// ============================================================
-// LESSON: Dashboard page
-// This is what users see after connecting their wallet.
-// It imports useContract() which centralises all blockchain
-// reads and writes. Every child component just receives props
-// — none of them import wagmi directly. This keeps components
-// clean, reusable, and easy to test with mock data.
-// ============================================================
+
 
 type Tab = 'faucet' | 'transfer' | 'mint'
 
@@ -26,7 +19,7 @@ export default function Dashboard() {
   const { disconnect } = useDisconnect()
   const [activeTab, setActiveTab] = useState<Tab>('faucet')
 
-  // ── All blockchain data and actions come from one hook ──
+ 
   const {
     address,
     tokenStats,
@@ -39,7 +32,7 @@ export default function Dashboard() {
     txHash,
   } = useContract()
 
-  // Is the connected wallet the contract owner?
+  
   const isOwner =
     address && tokenStats
       ? address.toLowerCase() === tokenStats.owner.toLowerCase()
@@ -72,7 +65,7 @@ export default function Dashboard() {
           </p>
         </section>
 
-        {/* ── Stat cards ── */}
+        {/* Stat cards */}
         <section className="stats-grid">
           <StatCard
             label="Total Supply"
@@ -94,7 +87,7 @@ export default function Dashboard() {
           />
         </section>
 
-        {/* ── Supply bar ── */}
+        {/* Supply bar */}
         {tokenStats && (
           <section className="card">
             <h2 className="card-title">Supply Progress</h2>
@@ -105,7 +98,7 @@ export default function Dashboard() {
           </section>
         )}
 
-        {/* ── Actions ── */}
+        {/* Actions */}
         <section className="card">
           {/* Tab bar */}
           <div className="tab-bar">
@@ -142,12 +135,12 @@ export default function Dashboard() {
             />
           )}
 
-          {/* ── Tx feedback ── */}
+          {/* Tx feedback */}
           {(isLoading || isTxConfirmed) && (
             <div className="tx-feedback">
               {isTxConfirmed ? (
                 <span>
-                  ✅ Confirmed!{' '}
+                  Confirmed!{' '}
                   {txHash && (
                     <a
                       href={`${BLOCK_EXPLORER_URL}/tx/${txHash}`}
