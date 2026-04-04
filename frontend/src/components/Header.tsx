@@ -7,21 +7,27 @@ interface HeaderProps {
 
 export function Header({ address, onDisconnect }: HeaderProps) {
   return (
-    <header className="dash-header">
-      <div className="header-left">
-        <div className="logo">
-          <HexLogo />
-          Opera Finance
+    <header className="sticky top-0 z-[100] border-b border-bord/80 bg-bg/85 backdrop-blur-md">
+      <div className="app-container flex flex-wrap items-center justify-between gap-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-[10px] font-mono text-base font-bold text-text">
+            <HexLogo />
+            Opera Finance
+          </div>
+          <span className="rounded-full border border-accent-blue/30 bg-accent-blue/10 px-3 py-[3px] text-[10px] font-mono text-accent-blue">
+            Sepolia
+          </span>
         </div>
-        <span className="net-pill">Sepolia</span>
-      </div>
 
-      <div className="header-right">
-        <div className="wallet-dot" />
-        <span className="wallet-addr">{shortenAddress(address)}</span>
-        <button className="btn-ghost" onClick={onDisconnect}>
-          Disconnect
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-accent-green" />
+          <span className="rounded-full border border-accent-green/30 bg-accent-green/10 px-3 py-1 font-mono text-xs text-accent-green">
+            {shortenAddress(address)}
+          </span>
+          <button className="btn-muted py-1.5 text-xs" onClick={onDisconnect}>
+            Disconnect
+          </button>
+        </div>
       </div>
     </header>
   );

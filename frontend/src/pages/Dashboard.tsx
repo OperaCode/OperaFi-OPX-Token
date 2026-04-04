@@ -11,15 +11,12 @@ import { useContract }   from '../hooks/useContract'
 import { formatTokenAmount } from '../utils/format'
 import { BLOCK_EXPLORER_URL } from '../utils/constants'
 
-
-
 type Tab = 'faucet' | 'transfer' | 'mint'
 
 export default function Dashboard() {
   const { disconnect } = useDisconnect()
   const [activeTab, setActiveTab] = useState<Tab>('faucet')
 
- 
   const {
     address,
     tokenStats,
@@ -32,7 +29,6 @@ export default function Dashboard() {
     txHash,
   } = useContract()
 
-  
   const isOwner =
     address && tokenStats
       ? address.toLowerCase() === tokenStats.owner.toLowerCase()
@@ -41,37 +37,32 @@ export default function Dashboard() {
   const secondsUntilNext = userStats ? Number(userStats.secondsUntilNext) : 0
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'faucet',   label: '🚰 Faucet'  },
-    { id: 'transfer', label: '↗ Transfer' },
-    ...(isOwner ? [{ id: 'mint' as Tab, label: '⚡ Mint' }] : []),
+    { id: 'faucet', label: 'Faucet' },
+    { id: 'transfer', label: 'Transfer' },
+    ...(isOwner ? [{ id: 'mint' as Tab, label: 'Mint' }] : []),
   ]
 
-
-console.log('contract address:', import.meta.env.VITE_CONTRACT_ADDRESS)
-console.log('rpc url:', import.meta.env.VITE_SEPOLIA_RPC)
-
-
   return (
-    <div className="dashboard">
+    <div className="app-shell flex min-h-screen flex-col">
       <Header
         address={address ?? ''}
         onDisconnect={() => disconnect()}
       />
 
-      <main className="dash-main">
+      <main className="app-container flex flex-1 flex-col gap-5 py-8">
 
-        {/* ── Hero ── */}
-        <section className="dash-hero">
-          <h1 className="dash-title">
-            <span className="accent">OPX</span> Token Dashboard
+        {/* Hero */}
+        <section className="animate-fade-up py-1 text-center">
+          <h1 className="mb-2 font-mono text-[30px] font-bold text-text">
+            <span className="text-accent-green">OPX</span> Token Dashboard
           </h1>
-          <p className="dash-sub">
+          <p className="text-sm text-dim">
             Request free tokens every 24 hours · Transfer · Mint (owner only)
           </p>
         </section>
 
         {/* Stat cards */}
-        <section className="stats-grid">
+        <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatCard
             label="Total Supply"
             value={tokenStats ? `${formatTokenAmount(tokenStats.totalSupply)} OPX` : '—'}
@@ -92,10 +83,10 @@ console.log('rpc url:', import.meta.env.VITE_SEPOLIA_RPC)
           />
         </section>
 
-        {/* Supply bar */}
+        {/* Supply progress */}
         {tokenStats && (
-          <section className="card">
-            <h2 className="card-title">Supply Progress</h2>
+          <section className="ui-panel animate-fade-up p-6">
+            <h2 className="section-title mb-4">Supply Progress</h2>
             <SupplyBar
               totalSupply={tokenStats.totalSupply}
               maxSupply={tokenStats.maxSupply}
@@ -104,13 +95,17 @@ console.log('rpc url:', import.meta.env.VITE_SEPOLIA_RPC)
         )}
 
         {/* Actions */}
-        <section className="card">
+        <section className="ui-panel animate-fade-up p-6" style={{ animationDelay: '0.1s' }}>
           {/* Tab bar */}
-          <div className="tab-bar">
+          <div className="mb-5 flex gap-1 overflow-x-auto rounded-lg border border-bord bg-surf2/60 p-1">
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                className={`tab ${activeTab === tab.id ? 'tab--active' : ''}`}
+                className={`tab-btn whitespace-nowrap ${
+                  activeTab === tab.id 
+                    ? 'bg-surf text-accent-green shadow-[0_8px_20px_rgba(0,0,0,0.2)]' 
+                    : 'text-dim hover:text-text'
+                }`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 {tab.label}
@@ -118,18 +113,14 @@ console.log('rpc url:', import.meta.env.VITE_SEPOLIA_RPC)
             ))}
           </div>
 
-          {/* Tab panels */}
-
+          {/* Panels */}
           {activeTab === 'faucet' && (
-            <>
-            {console.log('isLoading:', isLoading, '| canRequest:', userStats?.canRequest, '| secondsUntilNext:', userStats?.secondsUntilNext?.toString())}
             <FaucetPanel
               canRequest={userStats?.canRequest ?? false}
               secondsUntilNext={secondsUntilNext}
               isLoading={isLoading}
               onRequest={requestToken}
             />
-            </>
           )}
           {activeTab === 'transfer' && (
             <TransferPanel
@@ -146,7 +137,7 @@ console.log('rpc url:', import.meta.env.VITE_SEPOLIA_RPC)
 
           {/* Tx feedback */}
           {(isLoading || isTxConfirmed) && (
-            <div className="tx-feedback">
+            <div className="mt-5 rounded-lg border border-accent-green/20 bg-accent-green/5 p-3 px-4 text-sm text-accent-green">
               {isTxConfirmed ? (
                 <span>
                   Confirmed!{' '}
@@ -155,23 +146,26 @@ console.log('rpc url:', import.meta.env.VITE_SEPOLIA_RPC)
                       href={`${BLOCK_EXPLORER_URL}/tx/${txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="tx-link"
+                      className="link-external"
                     >
-                      View on Etherscan ↗
+                      View on Etherscan
                     </a>
                   )}
                 </span>
               ) : (
-                <span>⏳ Transaction pending…</span>
+                <span className="flex items-center gap-2">
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-accent-green border-t-transparent" />
+                  Transaction pending…
+                </span>
               )}
             </div>
           )}
         </section>
 
-        {/*  Token info  */}
+        {/* Token info */}
         {tokenStats && (
-          <section className="card">
-            <h2 className="card-title">Token Info</h2>
+          <section className="ui-panel animate-fade-up p-6" style={{ animationDelay: '0.2s' }}>
+            <h2 className="section-title mb-4">Token Info</h2>
             <TokenInfo
               name={tokenStats.name}
               symbol={tokenStats.symbol}
@@ -182,8 +176,8 @@ console.log('rpc url:', import.meta.env.VITE_SEPOLIA_RPC)
 
       </main>
 
-      <footer className="dash-footer">
-        Opera Finance · Hardhat + React + wagmi
+      <footer className="border-t border-bord/80 py-5 text-center text-xs text-dim">
+        Opera Finance · Hardhat + React + wagmi + TailwindCSS
       </footer>
     </div>
   )

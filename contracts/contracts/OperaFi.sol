@@ -61,10 +61,7 @@ contract OperaFi is ERC20, Ownable {
 
         require(amount > 0, "Amount must be greater than zero");
 
-        require(
-            totalSupply() + amount <= MAX_SUPPLY,
-            "Maximum supply reached"
-        );
+        require(totalSupply() + amount <= MAX_SUPPLY, "Maximum supply reached");
 
         _mint(to, amount);
 

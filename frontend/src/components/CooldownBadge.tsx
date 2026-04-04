@@ -1,45 +1,26 @@
 import { useCountdown } from "../hooks/useCountdown";
 
 interface CooldownBadgeProps {
-  secondsUntilNext: number;
+  seconds: number;
 }
 
-export function CooldownBadge({ secondsUntilNext }: CooldownBadgeProps) {
-  const { isReady, display } = useCountdown(secondsUntilNext);
+export function CooldownBadge({ seconds }: CooldownBadgeProps) {
+  const { display, isReady } = useCountdown(seconds);
 
   if (isReady) {
     return (
-      <div className="badge badge--ready">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="6" stroke="#00e5a0" strokeWidth="1.3" />
-          <path
-            d="M4 7l2 2 4-4"
-            stroke="#00e5a0"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        Ready to claim
+      <div className="inline-flex items-center gap-2 rounded-full border border-accent-green/25 bg-accent-green/10 px-4 py-2 font-mono text-[13px] text-accent-green">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-accent-green" />
+        Ready to Claim
       </div>
     );
   }
 
   return (
-    <div className="cooldown-box">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="10" r="8" stroke="#f0b429" strokeWidth="1.4" />
-        <path
-          d="M10 6v4l2.5 2"
-          stroke="#f0b429"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-      </svg>
+    <div className="ui-panel-soft flex items-center gap-4 border-accent-gold/25 bg-accent-gold/5 px-5 py-4">
       <div>
-        <p className="cooldown-label">Next claim in</p>
-
-        <p className="cooldown-timer">{display}</p>
+        <div className="section-title mb-1">Cooldown Active</div>
+        <div className="font-mono text-xl font-bold text-accent-gold">{display}</div>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ import { sepolia } from 'wagmi/chains'
 import { injected } from 'wagmi/connectors'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
-import './App.css'
+import './index.css'
 
 const config = createConfig({
   chains: [sepolia],

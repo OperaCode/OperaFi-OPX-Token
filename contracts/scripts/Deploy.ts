@@ -16,7 +16,7 @@ async function main() {
   console.log("\n⏳ Deploying OperaFi...");
   const OperaFi = await ethers.getContractFactory("OperaFi");
 
-  const token = await OperaFi.deploy(deployer.address); // ensure constructor matches
+  const token = await OperaFi.deploy(deployer.address); 
 
   await token.waitForDeployment();
 

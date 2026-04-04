@@ -14,19 +14,17 @@ export function FaucetPanel({
   onRequest,
 }: FaucetPanelProps) {
   return (
-    <div className="panel">
-      <p className="panel-desc">
-        Claim <strong>100 OPX</strong> every 24 hours, completely free.
+    <div className="flex flex-col gap-5">
+      <p className="text-sm leading-relaxed text-dim">
+        Claim 100 OPX tokens every 24 hours. Your wallet must be connected to the Sepolia testnet to receive tokens.
       </p>
 
-      <CooldownBadge secondsUntilNext={secondsUntilNext} />
+      <div className="py-1">
+        <CooldownBadge seconds={secondsUntilNext} />
+      </div>
 
-      <button
-        className="btn btn--green btn--lg"
-        onClick={onRequest}
-        disabled={isLoading || !canRequest}
-      >
-        {isLoading ? "Confirming…" : "Request 100 OPX"}
+      <button className="btn-primary w-full" onClick={onRequest} disabled={!canRequest || isLoading}>
+        {isLoading ? "Processing..." : "Claim 100 OPX"}
       </button>
     </div>
   );
