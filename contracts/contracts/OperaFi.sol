@@ -6,8 +6,8 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract OperaFi is ERC20, Ownable {
+    
     // STATE VARIABLES
-
     uint256 public constant MAX_SUPPLY = 10_000_000 * 10 ** 18;
 
     uint256 public constant INITIAL_SUPPLY = 100 * 10 ** 18;

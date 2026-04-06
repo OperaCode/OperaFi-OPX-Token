@@ -1,196 +1,134 @@
-# OperaFi 🎭
+# OperaFi
 
-A full-stack ERC-20 token project built on **Lisk Sepolia** testnet. Includes a Solidity smart contract with a built-in faucet, and a React + TypeScript frontend for interacting with it.
+OperaFi is a full-stack ERC-20 faucet dApp.
 
----
+- Smart contract: Solidity + Hardhat
+- Frontend: React + TypeScript + Vite + wagmi/viem
+- Core flow: connect wallet -> claim faucet tokens (24h cooldown) -> transfer -> owner mint
 
-## Live Demo
+## Highlights
 
-- **Frontend:** https://opera-fi-opx-token.vercel.app/
-- **Contract Address & Verification:** [`0x92E143F3C276476B5F5e1054434D8681d5a2B51f`](https://sepolia-blockscout.lisk.com/address/0x92E143F3C276476B5F5e1054434D8681d5a2B51f)
-- **Network:** Lisk Sepolia (Chain ID: 4202)
+- ERC-20 token with capped supply
+- Faucet claim amount fixed to `100` tokens per request
+- Cooldown enforced on-chain (`24 hours`)
+- Owner-only mint function
+- Dashboard for supply, balance, faucet status, transfer, and owner actions
 
----
-
-## Token Details
-
-| Property | Value |
-|---|---|
-| Name | Opera Finance |
-| Symbol | OPX |
-| Decimals | 18 |
-| Max Supply | 10,000,000 OPX |
-| Initial Supply | 100 OPX (minted to owner) |
-| Faucet Amount | 100 OPX per claim |
-| Cooldown Period | 24 hours |
-
----
-
-## Project Features
-
-### Smart Contract
-- ERC-20 token with OpenZeppelin base contracts
-- Public faucet — anyone can claim 100 OPX every 24 hours
-- Owner-only `mint` function for manual minting
-- Hard cap on max supply enforced on every mint
-
-
-### Frontend
-- Connect wallet via MetaMask (wagmi v3)
-- Live token stats: total supply, remaining supply, your balance
-- Faucet panel with countdown timer until next claim
-- Transfer tokens to any address
-- Owner mint panel (visible only to contract owner)
-- Supports Lisk Sepolia network
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Smart Contract | Solidity 0.8.20, OpenZeppelin v5 |
-| Dev/Test/Deploy | Hardhat, TypeScript |
-| Frontend | React, TypeScript, Vite |
-| Blockchain Hooks | wagmi v3, viem |
-| Styling | CSS (custom) |
-| Network | Lisk Sepolia (Chain ID 4202) |
-
----
-
-## Project Structure
-
-```
-operafi/
-├── contracts/
-│   ├── contracts/
-│   │   └── OperaFi.sol          # ERC-20 token contract
-│   ├── scripts/
-│   │   └── deploy.ts            # Deployment script
-│   ├── test/
-│   │   └── OperaFi.ts           # Contract tests
-│   └── hardhat.config.ts
-│
-└── frontend/
-    └── src/
-        ├── abi/
-        │   └── OperaFi.ts       # Contract ABI
-        ├── components/          # UI components
-        ├── hooks/
-        │   ├── useContract.ts   # Blockchain reads/writes
-        │   └── useCountdown.ts  # Cooldown timer
-        ├── pages/
-        │   ├── LandingPage.tsx
-        │   └── Dashboard.tsx
-        └── utils/
-            ├── constants.ts
-            └── format.ts
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js >= 18
-- MetaMask browser extension
-- Lisk Sepolia ETH for gas 
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/OperaCode/OperaFi-OPX-Token.git
-cd operafi
-```
-
-### 2. Set up the contract
-
-```bash
-cd contracts
-npm install
-```
-
-Create a `.env` file:
-
-```env
-PRIVATE_KEY=your_wallet_private_key
-LISK_SEPOLIA_URL=https://rpc.sepolia-api.lisk.com
-```
-
-Compile and test:
-
-```bash
-npx hardhat compile
-npx hardhat test
-```
-
-Deploy:
-
-```bash
-npx hardhat run scripts/deploy.ts --network liskSepolia
-```
-
-Verify on Blockscout:
-
-```bash
-npx hardhat verify --network liskSepolia <DEPLOYED_ADDRESS> "<OWNER_ADDRESS>"
-```
-
-### 3. Set up the frontend
-
-```bash
-cd ../frontend
-npm install
-```
-
-Create a `.env` file:
-
-```env
-VITE_CONTRACT_ADDRESS=0x92E143F3C276476B5F5e1054434D8681d5a2B51f
-VITE_SEPOLIA_RPC=https://rpc.sepolia-api.lisk.com
-```
-
-Run locally:
-
-```bash
-npm run dev
-```
-
----
-
-
-## Network Configuration
-
-Add **Lisk Sepolia** to MetaMask:
+## Contract Parameters (from code)
 
 | Field | Value |
 |---|---|
-| Network Name | Lisk Sepolia |
-| RPC URL | `https://rpc.sepolia-api.lisk.com` |
-| Chain ID | `4202` |
-| Currency Symbol | `ETH` |
-| Block Explorer | `https://sepolia-blockscout.lisk.com` |
+| Token Name | `Opera Finance` |
+| Token Symbol | `OFI` |
+| Decimals | `18` |
+| Max Supply | `10,000,000` |
+| Initial Supply | `100` |
+| Faucet Amount | `100` |
+| Cooldown | `24 hours` |
 
----
+## Project Structure
+
+```text
+OperaFi/
+├── contracts/
+│   ├── contracts/OperaFi.sol
+│   ├── scripts/Deploy.ts
+│   ├── test/OperaFiTest.ts
+│   ├── hardhat.config.ts
+│   └── deployments/
+└── frontend/
+    ├── src/pages/
+    ├── src/components/
+    ├── src/hooks/
+    ├── src/abi/OperaFi.ts
+    └── src/utils/constants.ts
+```
+
+## Quick Start
+
+### 1) Install dependencies
+
+```bash
+cd contracts && npm install
+cd ../frontend && npm install
+```
+
+### 2) Run frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+### 3) Build frontend
+
+```bash
+cd frontend
+npm run build
+```
 
 ## Environment Variables
 
-### contracts/.env
+### `contracts/.env`
 
-| Variable | Description |
-|---|---|
-| `PRIVATE_KEY` | Deployer wallet private key |
-| `LISK_SEPOLIA_URL` | Lisk Sepolia RPC URL |
+```env
+PRIVATE_KEY=YOUR_PRIVATE_KEY
+LISK_SEPOLIA_URL=https://rpc.sepolia-api.lisk.com
+```
 
-### frontend/.env
+### `frontend/.env`
 
-| Variable | Description |
-|---|---|
-| `VITE_CONTRACT_ADDRESS` | Deployed contract address |
-| `VITE_SEPOLIA_RPC` | Lisk Sepolia RPC URL |
+```env
+VITE_CONTRACT_ADDRESS=0xYourDeployedContract
+```
 
----
+## Contract Development
+
+From `contracts/`:
+
+```bash
+# compile
+npx hardhat compile
+
+# test
+npx hardhat test
+
+# deploy (current config)
+npx hardhat run scripts/Deploy.ts --network liskSepolia
+```
+
+## Network Notes (Important)
+
+Current repo config is mixed:
+
+- Frontend constants currently target **Ethereum Sepolia** (`chainId 11155111`, Etherscan URL).
+- Hardhat config currently defines **Lisk Sepolia** (`chainId 4202`) as active deployment network.
+
+Before deploying/running end-to-end, align both sides to one network:
+
+1. Update `frontend/src/utils/constants.ts` for your target chain.
+2. Ensure `contracts/hardhat.config.ts` has that network enabled.
+3. Deploy contract on the same chain and set `VITE_CONTRACT_ADDRESS`.
+
+## Live Deployment (as currently documented in repo)
+
+- Frontend: `https://opera-fi-opx-token.vercel.app/`
+- Contract address shown in repo docs: `0x92E143F3C276476B5F5e1054434D8681d5a2B51f`
+
+Verify these match your active network before using in production demos.
+
+## Troubleshooting
+
+- Wallet connects but no data loads:
+  - Check wallet network matches `SUPPORTED_CHAIN_ID` in frontend constants.
+  - Check `VITE_CONTRACT_ADDRESS` points to a contract on that same chain.
+
+- Frontend CSS/Tailwind errors:
+  - Ensure dependencies are installed in `frontend/`.
+  - Run `npm run build` to catch config errors early.
+
+- Deploy succeeds but UI actions fail:
+  - ABI/address mismatch: verify `frontend/src/abi/OperaFi.ts` and deployed contract correspond.
 
 ## License
 
