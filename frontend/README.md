@@ -1,73 +1,65 @@
-# React + TypeScript + Vite
+# OperaFi Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript frontend for interacting with the OperaFi token contract.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- Vite 8
+- TypeScript
+- wagmi + viem
+- TanStack Query
+- Tailwind + custom CSS utilities
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Wallet connection (injected wallet / MetaMask)
+- Landing page with dApp sections and CTAs
+- Dashboard for:
+  - Token supply stats
+  - Faucet claim + cooldown
+  - Transfer tokens
+  - Owner mint actions
+- Transaction feedback with explorer links
 
-## Expanding the ESLint configuration
+## Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+From this directory (`frontend/`):
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Create `.env`:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_CONTRACT_ADDRESS=0xYourDeployedContract
 ```
+
+## Run
+
+```bash
+# development
+npm run dev
+
+# production build
+npm run build
+
+# preview production build
+npm run preview
+```
+
+## Important Config Files
+
+- `src/utils/constants.ts` - chain id, explorer URL, contract constants
+- `src/hooks/useContract.ts` - on-chain reads/writes
+- `src/abi/OperaFi.ts` - contract ABI
+- `postcss.config.js` - Tailwind PostCSS plugin setup
+
+## Network Alignment Note
+
+Before using the UI:
+
+1. Set `VITE_CONTRACT_ADDRESS` to a deployed contract on your target network.
+2. Confirm `SUPPORTED_CHAIN_ID` in `src/utils/constants.ts` matches that network.
+3. Ensure your wallet is connected to the same chain.

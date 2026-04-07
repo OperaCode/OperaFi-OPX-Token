@@ -1,13 +1,63 @@
-# Sample Hardhat Project
+# OperaFi Contracts
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+Solidity smart contracts for the OperaFi ERC-20 faucet dApp.
 
-Try running some of the following tasks:
+## Stack
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
+- Solidity `0.8.x`
+- Hardhat
+- OpenZeppelin Contracts
+- TypeScript tooling
+
+## Main Contract
+
+- Path: `contracts/contracts/OperaFi.sol`
+- Contract: `OperaFi`
+
+### Core Behavior
+
+- ERC-20 token (`Opera Finance`, symbol `OFI`)
+- Fixed max supply cap (`10,000,000` tokens)
+- Faucet claims (`100` tokens per request)
+- Claim cooldown per wallet (`24 hours`)
+- Owner-only `mint(address,uint256)`
+
+## Setup
+
+From this directory (`contracts/`):
+
+```bash
+npm install
 ```
+
+Create `.env`:
+
+```env
+PRIVATE_KEY=YOUR_PRIVATE_KEY
+LISK_SEPOLIA_URL=https://rpc.sepolia-api.lisk.com
+```
+
+## Common Commands
+
+```bash
+# compile
+npx hardhat compile
+
+# test
+npx hardhat test
+
+# deploy (current hardhat config network)
+npx hardhat run scripts/Deploy.ts --network liskSepolia
+```
+
+## Network Configuration Note
+
+Current `hardhat.config.ts` is set to deploy on `liskSepolia` (`chainId 4202`).
+If your frontend is targeting Ethereum Sepolia (`11155111`), align both before testing end-to-end.
+
+## Files
+
+- `contracts/contracts/OperaFi.sol` - token and faucet logic
+- `contracts/scripts/Deploy.ts` - deployment script
+- `contracts/test/OperaFiTest.ts` - contract tests
+- `contracts/hardhat.config.ts` - network/tooling config
